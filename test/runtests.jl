@@ -8,6 +8,7 @@ using Test
 
     for s in ["", "\0\0", "\0\x7f", "\x7f", "abcdef", "!!~+_:,AXB"]
         @test ASCIIString(s) isa ASCIIString
+        @test ASCIIString(Test.GenericString(s)) isa ASCIIString
     end
 end
 
@@ -15,6 +16,7 @@ end
     for s in ["", "\0\0", "\0\x7f", "\x7f", "abcdef", "!!~+_:,AXB"]
         a = ASCIIString(s)
         @test a == s
+        @test a == ASCIIString(Test.GenericString(s))
         @test isequal(a, s)
         @test hash(a) == hash(s)
         @test codeunits(a) == codeunits(s)
@@ -48,13 +50,15 @@ end
 
     for i in 1:ncodeunits(s1)
         @test thisind(s1, i) == i
+        @test prevind(s1, i) == i - 1
+        @test nextind(s1, i) == i + 1
         @test isvalid(s1, i)
         @test Char(codeunit(s1, i)) == s1[i]
     end
 end
 
 @testset "Other string ops" begin
-    for s in [
+    v = [
         "",
         "\0\0",
         "\0\x7f",
@@ -63,9 +67,12 @@ end
         "!!~+_:,AXB",
         "This Is some longEr string :!cc<<",
     ]
+    for s in v
         a = ASCIIString(s)
         @test reverse(a) == reverse(s)
         @test uppercase(a) == uppercase(s)
         @test lowercase(a) == lowercase(s)
+        @test collect(a) == collect(s)
     end
+    @test sort(v) == sort(map(ASCIIString, v))
 end
